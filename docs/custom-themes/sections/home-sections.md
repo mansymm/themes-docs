@@ -374,7 +374,7 @@ my-theme/
 
 Every folder must contain exactly these files:
 
-- **`config.json`** — `icon`, `label`, and **`section_schema`** (field definitions; same types as in [Dynamic theme data](../dynamic-theme-data.md)).
+- **`config.json`** — `icon`, `label`, and **`section_schema`** (field definitions; same types as in [Dynamic theme data](../dynamic-theme-data.md), including optional root-level [`group`](../dynamic-theme-data.md#optional-editor-grouping-group) for editor layout).
 - **`template.liquid`** — Liquid for that block.
 
 Example `config.json`:

@@ -28,7 +28,52 @@ Every Liquid template receives {{ theme_data.your_key }}
 
 ## Schema Field Types
 
-Your `schema.json` is an array of field objects. Each field has a `name`, `type`, `description`, and optional `default`.
+Your `schema.json` is an array of field objects. Each field has a `name`, `type`, `description`, and optional `default`. On **root-level** entries only, you may also set an optional **`group`** string to visually batch consecutive fields in the theme settings UI (see [Optional editor grouping](#optional-editor-grouping-group) below).
+
+### Optional editor grouping (`group`)
+
+You may add an optional string property **`group`** to any field in the **root** `schema.json` array. It does **not** change how data is stored: `theme_data` stays a flat object keyed only by each field's `name`. The `group` value is **never** written to `theme_data` and is **not** available in Liquid.
+
+In the theme settings panel, **consecutive** root-level fields that share the same non-empty `group` string are shown inside **one collapsible accordion** (the header title is the `group` text; merchants can expand or collapse it).
+
+**Rules:**
+
+1. **Order:** The builder walks the root array from top to bottom. Only **adjacent** fields with the **same** `group` appear in the same block. If another field sits between two fields that use the same label, they form **separate** blocks.
+2. **Root only:** Do **not** put `group` on definitions inside an `object_array`'s `fields` array — those inner row editors stay a flat list; `group` there is ignored.
+3. **Unique `name`:** Each setting still needs a distinct `name` across the whole schema; `group` is only a display label, not a namespace.
+4. **Whole `object_array`:** You may set `group` on the **`object_array` field itself** in the root array so that entire control groups with neighboring root fields that use the same `group` string.
+
+**Example:**
+
+```json
+[
+  {
+    "name": "hero_title",
+    "type": "string",
+    "description": "Hero heading",
+    "default": "Welcome",
+    "group": "Hero"
+  },
+  {
+    "name": "hero_image",
+    "type": "image",
+    "description": "Hero image",
+    "default": "",
+    "group": "Hero"
+  },
+  {
+    "name": "footer_note",
+    "type": "string",
+    "description": "Small print in footer",
+    "default": "",
+    "group": "Footer"
+  }
+]
+```
+
+Merchants see two accordions ("Hero" and "Footer"), each expandable/collapsible. In Liquid you still use `theme_data.hero_title`, `theme_data.hero_image`, and `theme_data.footer_note`.
+
+The same optional `group` applies to **root** entries in **`section_schema`** for custom home sections (`config.json` under `home-sections/`); values remain flat on `section_data`.
 
 ### Primitive Fields
 
@@ -275,6 +320,8 @@ For a **single** ID, call the same endpoints as for multi-select (for example `f
 ### Object Array Field
 
 A repeatable group of fields. Merchants can add, remove, and reorder items. Each item is an object with its own fields — primitive, select, multi-select, the [entity multi-select](#entity-multi-select-fields-products--categories--pages) types, and the [entity single-select](#entity-single-select-fields-products--categories--pages) types are all allowed inside. Nested `object_array` fields are not supported.
+
+You may set **`group`** on the **`object_array` field itself** when it appears in the root schema (to visually group that whole control with adjacent root fields). Do **not** add `group` to individual definitions inside **`fields`** — inner row editors do not use grouping.
 
 ```json
 {
@@ -589,6 +636,7 @@ For global color values, prefer using the [Palette](./palette) system instead of
 | `default`     | No (not allowed for entity multi-select or entity single-select field types) | varies   | Default value when merchant hasn't set one                                                                                                                                                                                                                   |
 | `options`     | For `select` / `multi_select`                                                | `array`  | Array of `{ label, value }` objects                                                                                                                                                                                                                          |
 | `fields`      | For `object_array`                                                           | `array`  | Array of nested field definitions (primitive, select, multi-select, entity multi-select, or entity single-select — no nested object arrays)                                                                                                                  |
+| `group`       | No                                                                           | `string` | **Root-level fields only.** Optional label to batch consecutive fields in the settings UI; not stored and not available in Liquid ([Optional editor grouping](#optional-editor-grouping-group))                                                              |
 
 ### Stored Value by Type
 
