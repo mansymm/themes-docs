@@ -407,9 +407,9 @@ Custom home sections do **not** receive `product.product_theme_data`. Entity pic
 | Authoring | Stored `key` |
 | --------- | ------------ |
 | Folder `category-mosaic` | `category_mosaic` |
-| Folder `Tilted-Scrolling-Marque` | `tilted_scrolling_marque` |
+| Folder `tilted-scrolling-marque` | `tilted_scrolling_marque` |
 
-Hyphens in folder names become underscores. Keys must be unique across all `home-sections/` folders.
+Hyphens in folder names become underscores. Use **lowercase kebab-case** folder names (like the other blocks in the CLI template). Keys must be unique across all `home-sections/` folders.
 
 ### Entity fields in `section_data`
 
@@ -417,7 +417,7 @@ Hyphens in folder names become underscores. Keys must be unique across all `home
 
 1. **Resolve in Liquid** when the section already receives matching entities in scope (same patterns as [Resolving IDs in templates](../dynamic-theme-data.md#resolving-ids-in-templates)).
 2. **Hydrate client-side** with `data-eo-hs-*` attributes (below) — the reference CLI `script.js` includes helpers for this.
-3. **Fetch in your own `script.js`** using the storefront API (`/api/products?filter=id||$in||…`).
+3. **Fetch in your own `script.js`** using the Easy Orders API (for example `https://api.easy-orders.net/api/v1/products?filter=id||$in||…`).
 
 ### Hydrating entity IDs (`data-eo-hs-*`)
 

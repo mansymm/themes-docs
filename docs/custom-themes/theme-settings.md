@@ -52,10 +52,6 @@ Example structure (abbreviated):
     "body_bg": "",
     "body_text": ""
   },
-  "theme_data": {
-    "hero_headline": "Welcome to Our Store",
-    "color_primary": "#1A1A2E"
-  },
   "announcement_bar": {
     "text": ["Free shipping", "Genuine quality"],
     "type": "marquee",
@@ -131,7 +127,7 @@ Optional color overrides (`bg_color`, `txt_color`) may appear in saved config bu
 | `social` | `{ type, url }[]` | Social links — `type` is one of `facebook`, `instagram`, `twitter`, `linkedin`, `tiktok`, `youtube`, `snapchat`, `whatsapp` |
 | `payment_img` | string | Payment methods image URL |
 
-When `is_use_config` is false, footer categories/pages come from store navigation flags (`show_in_header`, `show_in_footer`), social links from the Social Links plugin, and payment image from the theme default.
+When `is_use_config` is false, footer **categories** come from store categories where `show_in_header` is true (and the category is not hidden); footer **pages** come from simple pages where `show_in_footer` and `is_active` are true. Social links come from the Social Links plugin, and the payment image comes from the theme default.
 
 Resolved footer Liquid variables are documented in [Layout sections — Footer](./sections/layout-sections#footer).
 
@@ -147,7 +143,9 @@ During **CLI preview**, palette values from the live store are kept; local `conf
 
 ## `theme-data.json` (CLI only)
 
-CLI projects include `theme-data.json` — default values for `theme_data` during local preview. It mirrors what merchants would save from your `schema.json` fields (sale badge colors, newsletter text, layout spacing, etc.).
+CLI projects include `theme-data.json` — default values for `theme_data` during local preview. It mirrors what merchants would save from your `schema.json` fields (sale badge colors, newsletter text, layout spacing, etc.). **Do not put `theme_data` in `config.json`** — the CLI dev server reads preview values only from `theme-data.json`.
+
+Every key in `theme-data.json` should match a field `name` defined in `schema.json`. Remove keys that are not in the schema; add keys when you add new schema fields.
 
 Production stores persist `theme_data` in the database; merchants edit it through the schema form generated from `schema.json`. You do not upload `theme-data.json` — only `schema.json` (`theme_data_schema`).
 

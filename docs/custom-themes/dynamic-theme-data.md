@@ -317,7 +317,7 @@ Sections like `featured-products`, `list-products`, and `home-products-grid` alr
 
 ##### Pattern B — Print IDs and hydrate via `script.js`
 
-When the section doesn't receive the entity in its template variables (or you want to be lazy about it), print the IDs as a JSON list and hydrate from your `script.js` using the storefront API:
+When the section doesn't receive the entity in its template variables (or you want to fetch at runtime), print the IDs as a JSON list and hydrate from your `script.js` using the **Easy Orders API**:
 
 ```liquid
 <div
@@ -327,13 +327,17 @@ When the section doesn't receive the entity in its template variables (or you wa
 ```
 
 ```js
+const API_BASE = "https://api.easy-orders.net/api/v1";
+
 document.querySelectorAll(".featured-products").forEach(async (el) => {
   const ids = JSON.parse(el.dataset.productIds);
   if (ids.length === 0) return;
   const res = await fetch(
-    `/api/products?filter=id||$in||${ids.join(",")}&limit=${ids.length}`
+    `${API_BASE}/products?filter=id||$in||${ids.join(",")}&limit=${ids.length}`,
+    { headers: { Accept: "application/json" } }
   );
-  const { data } = await res.json();
+  const body = await res.json();
+  const data = Array.isArray(body) ? body : body.data ?? [];
   // render `data` into `el`, preserving the merchant's order
 });
 ```

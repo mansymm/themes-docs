@@ -12,7 +12,11 @@ Utility sections provide social proof widgets (fake visitor counts, stock indica
 
 **File:** `sections/fake-visitor.liquid`
 
-Displays a simulated "X people are viewing this product" counter. The storefront animates the count between `min` and `max` on the client side.
+Displays a simulated "X people are viewing this product" counter. The React wrapper only renders your Liquid HTML — **client-side animation is handled by your theme `script.js`**, not built into the storefront runtime.
+
+:::info
+The reference CLI template animates visitor counts in `script.js` (look for `.ab-fake-visitor`, `data-min`, `data-max`, and `.ab-fv-count`). If you use different class names, wire equivalent logic in your own `script.js`.
+:::
 
 ### Variables
 
@@ -25,7 +29,7 @@ Displays a simulated "X people are viewing this product" counter. The storefront
 
 ### Data Attributes
 
-None required. The storefront reads `data-min` and `data-max` to drive the animation.
+Your `script.js` can read `data-min` and `data-max` on the root element to drive the animation (see the CLI template). The storefront does not animate this section by itself.
 
 ### Events
 
@@ -82,7 +86,11 @@ None required.
 
 **File:** `sections/fake-counter.liquid`
 
-Displays a countdown timer. The storefront reads `data-hours` and `data-product-id` to calculate and animate the remaining time on the client side.
+Displays a countdown timer. The React wrapper only renders your Liquid HTML — **the countdown runs in your theme `script.js`**, not in the storefront runtime.
+
+:::info
+The reference CLI template drives countdowns in `script.js` (look for `.ab-fake-counter`, `data-hours`, `data-product-id`, and `data-unit="days|hours|minutes|seconds"`). Match those hooks or implement your own timer logic.
+:::
 
 ### Variables
 
@@ -99,7 +107,7 @@ Displays a countdown timer. The storefront reads `data-hours` and `data-product-
 
 ### Data Attributes
 
-The storefront reads these to drive the countdown:
+Your `script.js` can read these attributes to drive the countdown (see the CLI template). The storefront does not run the timer by itself.
 
 | Attribute | Element | Purpose |
 |-----------|---------|---------|
