@@ -137,7 +137,9 @@ Displays the product name, price, rating, and optional short description.
 | `rating`        | number         | Average rating (0–5)                                         |
 | `reviews_count` | number         | Total number of reviews                                      |
 | `description`   | string \| null | Short description (when `is_description_in_details` is true) |
-| `theme_data`    | object         | Merchant-configured dynamic settings                         |
+| `product_id`    | string         | Product ID (for wishlist/compare event `detail`)            |
+| `theme_data`    | object         | Merchant-configured dynamic settings                        |
+| `product_theme_data` | object    | Per-product settings from `product-data-schema.json`      |
 
 ### Events
 

@@ -394,7 +394,87 @@ Example `config.json`:
 }
 ```
 
-When the theme is uploaded, those folders populate the theme template’s **`home_sections`** list. Merchants add instances in the home builder; each instance’s saved values are exposed in Liquid as **`section_data`**. Global theme settings from `schema.json` are still available as **`theme_data`**.
+When the theme is uploaded, those folders populate the theme template’s **`home_sections`** list. Merchants add instances in the home builder; each instance’s saved values are exposed in Liquid as **`section_data`**.
+
+`section_data` is **only** available in these custom home section templates — not in built-in `sections/*.liquid` files. Global settings from `schema.json` are still available as **`theme_data`** here (as in every section).
+
+:::info
+Custom home sections do **not** receive `product.product_theme_data`. Entity pickers in `section_schema` store IDs in `section_data`; resolve them in Liquid or via `data-eo-hs-*` hydration (below).
+:::
+
+### Section key naming
+
+| Authoring | Stored `key` |
+| --------- | ------------ |
+| Folder `category-mosaic` | `category_mosaic` |
+| Folder `Tilted-Scrolling-Marque` | `tilted_scrolling_marque` |
+
+Hyphens in folder names become underscores. Keys must be unique across all `home-sections/` folders.
+
+### Entity fields in `section_data`
+
+`product_multi_select`, `category_multi_select`, `page_multi_select`, and the single-select variants store **IDs only** in `section_data` — not full product/category/page records. To render names, prices, or URLs you can:
+
+1. **Resolve in Liquid** when the section already receives matching entities in scope (same patterns as [Resolving IDs in templates](../dynamic-theme-data.md#resolving-ids-in-templates)).
+2. **Hydrate client-side** with `data-eo-hs-*` attributes (below) — the reference CLI `script.js` includes helpers for this.
+3. **Fetch in your own `script.js`** using the storefront API (`/api/products?filter=id||$in||…`).
+
+### Hydrating entity IDs (`data-eo-hs-*`)
+
+Custom home sections often use entity pickers. A practical pattern (included in the CLI template `script.js`):
+
+**Product or category grids** — container with ID list and mount point:
+
+```liquid
+<div
+  class="my-picks"
+  data-eo-hs-entity="products"
+  data-eo-hs-ids="{{ section_data.pick_product_ids | join: ',' | strip }}"
+>
+  <div data-eo-hs-mount>
+    {% for id in section_data.pick_product_ids %}
+      <div class="eo-hs-skeleton eo-hs-skeleton--product" aria-hidden="true"></div>
+    {% endfor %}
+  </div>
+</div>
+```
+
+- `data-eo-hs-entity` — `products` or `categories`
+- `data-eo-hs-ids` — comma-separated IDs in merchant display order
+- `data-eo-hs-mount` — inner element replaced with fetched cards after load
+
+Show skeleton placeholders in Liquid so layout does not jump while `script.js` fetches entities.
+
+**Single link from an entity ID** (e.g. category tile inside `object_array`):
+
+```liquid
+<a
+  href="#"
+  data-eo-hs-cta="1"
+  data-eo-hs-cta-entity="categories"
+  data-eo-hs-cta-id="{{ tile.category_id }}"
+>
+  {{ tile.label }}
+</a>
+```
+
+The CLI script resolves the ID and sets `href` to `/collections/{slug}`, `/products/{slug}`, or `/pages/{slug}` depending on `data-eo-hs-cta-entity`.
+
+Optional: wrap the section in an element with `data-eo-api-base` pointing at your store API origin if you need a non-default API base.
+
+### Events
+
+Custom home sections support the same storefront events as product grids when you wire them in your template:
+
+| Event | Detail | Purpose |
+| ----- | ------ | ------- |
+| `quick-add` | `{ productId }` | Add to cart from a hydrated product card |
+| `quick-view` | `{ productId }` | Open quick-view modal |
+| `toggle-wishlist` | `{ productId }` | Toggle wishlist |
+| `toggle-compare` | `{ productId }` | Add to compare and open modal |
+| `footer-subscribe` | `{ email }` | Newsletter signup |
+
+Dispatch bubbling `CustomEvent`s as documented in [Events reference](../events-reference). Link clicks inside the section are intercepted for SPA navigation when the section container enables link interception.
 
 ```liquid
 {% if section_data.title != blank %}

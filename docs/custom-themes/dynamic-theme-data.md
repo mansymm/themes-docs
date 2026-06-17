@@ -1,10 +1,10 @@
 ---
-sidebar_position: 3
+sidebar_position: 5
 ---
 
 # Dynamic Theme Data
 
-Dynamic theme data lets merchants customize your theme without touching code. You define a **schema** (`schema.json`) that describes the available settings, and merchants fill in the values through the admin panel. Those values are then available in every Liquid template as `theme_data`.
+Dynamic theme data lets merchants customize your theme without touching code. You define schemas — **`schema.json`** (store-wide), optional **`product-data-schema.json`** (per product), and **`section_schema`** in custom home blocks — and merchants fill values through the admin panel.
 
 ## How It Works
 
@@ -23,6 +23,15 @@ Every Liquid template receives {{ theme_data.your_key }}
 3. Merchants fill in the form (colors, text, toggles, repeatable items, etc.).
 4. The values are stored as `theme_data` — a flat key-value object.
 5. Every Liquid section template automatically receives `theme_data` in its render context.
+
+### Where values appear in Liquid
+
+| Schema file | Merchant UI | Liquid variable | Available in |
+| ----------- | ----------- | --------------- | ------------ |
+| `schema.json` | Theme settings (global fields) | `theme_data` | **All** section templates |
+| `home-sections/*/config.json` → `section_schema` | Home builder (per custom block instance) | `section_data` | **Custom home section** templates only |
+| `product-data-schema.json` | Product edit → Theme data | `product_theme_data` | **Product detail page** section templates (current product) |
+| `product-data-schema.json` | Product edit → Theme data | `product.product_theme_data` | **Product listing** section templates (`featured-products`, `list-products`, `home-products-grid`, `products-grid`, `related-products`) inside `{% for product in products %}` |
 
 ---
 
@@ -609,6 +618,83 @@ The `theme_data` object is automatically injected into **every** section templat
     <a href="/products/{{ hero.slug }}">{{ hero.name }}</a>
   {% endif %}
 {% endif %}
+```
+
+---
+
+## Per-product theme data (`product_theme_data`)
+
+Some settings should vary **per product** (custom badge text, extra tabs, highlight flags). Define them in **`product-data-schema.json`** — the same field types as `schema.json` (primitives, select, multi-select, entity pickers, `object_array`, optional root-level `group`).
+
+| File | Upload field | Liquid variable |
+| ---- | ------------ | ---------------- |
+| `product-data-schema.json` | `product_theme_schema` | `product_theme_data` on product **detail** sections; `product.product_theme_data` in product **listing** sections |
+
+### How merchants configure values
+
+1. You ship `product-data-schema.json` with the theme template.
+2. On the **product create/edit** page in the seller dashboard, merchants see a **Theme data** accordion when the active theme defines a schema.
+3. Values are saved per product and exposed in Liquid only in **product section** templates (see table above).
+
+### Accessing in Liquid
+
+**Product detail page** — use `product_theme_data` in section templates for that page (`product-details`, `gallery`, `product-description`, `reviews`, `fixed-buy-button`, fake widgets, etc.):
+
+```liquid
+{% if product_theme_data.custom_badge_title != blank %}
+  <span class="product-badge">{{ product_theme_data.custom_badge_title }}</span>
+{% endif %}
+
+{% for tab in product_theme_data.desc %}
+  <h3>{{ tab.title_headline }}</h3>
+  <p>{{ tab.title_desc }}</p>
+{% endfor %}
+```
+
+**Product listing sections** — use `product.product_theme_data` only in `featured-products`, `list-products`, `home-products-grid`, `products-grid`, and `related-products` when looping `products`:
+
+```liquid
+{% for product in products %}
+  {% if product.product_theme_data.custom_badge_title != blank %}
+    <span class="badge">{{ product.product_theme_data.custom_badge_title }}</span>
+  {% endif %}
+{% endfor %}
+```
+
+:::tip
+`product_theme_data` / `product.product_theme_data` and `theme_data` are independent. `section_data` is not available in product sections — only in custom home section templates.
+:::
+
+Example `product-data-schema.json`:
+
+```json
+[
+  {
+    "name": "custom_badge_title",
+    "type": "string",
+    "default": "",
+    "description": "Badge label on the product card"
+  },
+  {
+    "name": "desc",
+    "type": "object_array",
+    "description": "Extra product tabs",
+    "fields": [
+      {
+        "name": "title_headline",
+        "type": "string",
+        "default": "",
+        "description": "Tab title"
+      },
+      {
+        "name": "title_desc",
+        "type": "string",
+        "default": "",
+        "description": "Tab body"
+      }
+    ]
+  }
+]
 ```
 
 ---
