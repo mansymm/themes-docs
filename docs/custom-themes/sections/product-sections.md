@@ -137,7 +137,9 @@ Displays the product name, price, rating, and optional short description.
 | `rating`        | number         | Average rating (0–5)                                         |
 | `reviews_count` | number         | Total number of reviews                                      |
 | `description`   | string \| null | Short description (when `is_description_in_details` is true) |
-| `theme_data`    | object         | Merchant-configured dynamic settings                         |
+| `product_id`    | string         | Product ID (for wishlist/compare event `detail`)            |
+| `theme_data`    | object         | Merchant-configured dynamic settings                        |
+| `product_theme_data` | object    | Per-product settings from `product-data-schema.json`      |
 
 ### Events
 
@@ -733,7 +735,26 @@ The same product variable contract as the homepage product sections applies here
 | `sale` | string | Translated "Sale" label |
 | `theme_data` | object | Merchant-configured dynamic settings |
 
-**Product properties** and **variation properties** are identical to the other product sections.
+**Product properties:**
+
+| Property             | Type           | Description                                |
+| -------------------- | -------------- | ------------------------------------------ |
+| `product.id`         | string         | Product ID (used in events)                |
+| `product.name`       | string         | Product name                               |
+| `product.slug`       | string         | URL slug                                   |
+| `product.price`      | number         | Regular price                              |
+| `product.sale_price` | number \| null | Sale price                                 |
+| `product.thumb`      | string         | Main thumbnail URL                         |
+| `product.images`     | string[]       | Additional image URLs                      |
+| `product.variations` | array          | Variation groups with `type` and `props[]` |
+| `product.product_theme_data` | object         | Merchant-configured dynamic settings for each product, set on the product edit page in the Seller Dashboard |
+
+**Variation properties (for color swatches):**
+
+| Property          | Type   | Description                          |
+| ----------------- | ------ | ------------------------------------ |
+| `variation.type`  | string | `"color"` or `"image"`               |
+| `variation.props` | array  | Swatch items with `name` and `value` |
 
 ### Events
 

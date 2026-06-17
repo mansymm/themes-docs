@@ -8,8 +8,8 @@ Custom themes give you full control over the storefront by writing **Liquid temp
 
 ## How It Works
 
-1. You write `.liquid` section files, a `style.css`, a `script.js`, and a `schema.json`.
-2. You upload them through the **admin panel** (either individually or as a folder).
+1. You write `.liquid` section files, optional `home-sections/` blocks, a `style.css`, a `script.js`, `schema.json`, and optionally `product-data-schema.json`.
+2. You develop locally with the [**Easy Orders CLI**](./cli-development) (`easyorders create` / `easyorders start`) or upload through the **admin panel** (folder or individual files).
 3. The storefront renders each section using **LiquidJS**, injecting store data (products, categories, merchant settings) as template variables.
 4. Your CSS and JS are loaded globally on every page.
 
@@ -19,7 +19,7 @@ Every custom theme follows this exact folder layout:
 
 ```
 my-theme/
-├── sections/
+├── sections/                    ← 20 built-in section templates
 │   ├── header.liquid
 │   ├── footer.liquid
 │   ├── gallery.liquid
@@ -40,10 +40,17 @@ my-theme/
 │   ├── fixed-buy-button.liquid
 │   ├── thanks.liquid
 │   └── order-invoice.liquid
+├── home-sections/               ← optional custom homepage blocks (see Home sections)
+│   └── category-mosaic/
+│       ├── config.json
+│       └── template.liquid
 ├── style.css
 ├── script.js
-└── schema.json
+├── schema.json                  ← global theme_data schema
+└── product-data-schema.json     ← per-product theme_data schema (optional)
 ```
+
+When using the [CLI](./cli-development), the `theme/` folder also includes **`config.json`** (preview defaults for header, footer, announcement, palette) and **`theme-data.json`** (preview defaults for `theme_data`). Those two files are not part of the production upload map below.
 
 ## File Map Reference
 
@@ -73,7 +80,12 @@ When you upload a theme folder, each file maps to a specific field:
 | `sections/order-invoice.liquid`       | `order_invoice`       | Section | Order invoice view                    |
 | `style.css`                           | `theme_style`         | Asset   | Global CSS (minified on upload)       |
 | `script.js`                           | `theme_script`        | Asset   | Global JS (minified on upload)        |
-| `schema.json`                         | `theme_data_schema`   | Schema  | Dynamic settings schema               |
+| `schema.json`                         | `theme_data_schema`   | Schema  | Global dynamic settings schema        |
+| `product-data-schema.json`            | `product_theme_schema`| Schema  | Per-product dynamic settings schema |
+| `home-sections/<name>/config.json`    | `home_sections`       | Home    | Custom block metadata + `section_schema` |
+| `home-sections/<name>/template.liquid`| `home_sections`       | Home    | Custom block Liquid template          |
+
+Folder names under `home-sections/` become section **keys** with hyphens converted to underscores (e.g. `category-mosaic` → `category_mosaic`). Each folder must contain both `config.json` and `template.liquid`.
 
 ## Uploading Your Theme
 
@@ -89,18 +101,20 @@ Each section can also be edited individually through the built-in code editor in
 
 ## Quick Start
 
-1. **Copy the Allbirds example** as a starting point — it implements all 20 sections with a clean, modern design.
+1. **Scaffold with the CLI** — `easyorders create my-theme` then `easyorders start` for live preview on your dev store (see [CLI development](./cli-development)).
 2. **Edit the Liquid templates** — each section receives specific variables (documented under [Layout sections](./sections/layout-sections) and [Product sections](./sections/product-sections)).
 3. **Write your CSS** — use [palette CSS variables](./palette) for merchant-configurable colors.
-4. **Define your schema** — add [dynamic settings](./dynamic-theme-data) so merchants can customize the theme without touching code.
-5. **Upload and test** — upload through the admin panel and preview on a test store.
+4. **Define your schemas** — `schema.json` for global [dynamic settings](./dynamic-theme-data) and optional `product-data-schema.json` for [per-product settings](./dynamic-theme-data#per-product-theme-data-product_theme_data).
+5. **Upload and test** — upload through the admin panel or keep using the CLI tunnel until you publish.
 
 ## What's Next
 
 | Topic                                                                                           | Description                                                     |
 | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| [CLI development](./cli-development)                                                            | Local dev server, tunnel preview, and `config.json`             |
+| [Theme settings](./theme-settings)                                                              | Header, footer, announcement bar, and palette config              |
 | [Palette](./palette)                                                                            | Merchant-configurable colors as CSS variables (`--hd-bg`, etc.) |
-| [Dynamic Theme Data](./dynamic-theme-data)                                                      | Merchant-configurable settings via `schema.json`                |
-| [Liquid Reference](./liquid-reference)                                                          | Template syntax, filters, and rendering                         |
-| [Layout sections](./sections/layout-sections) · [Product sections](./sections/product-sections) · [Home sections](./sections/home-sections) | All 20 section templates with variables, events, and examples   |
-| [Events Reference](./events-reference)                                                          | Custom DOM events, link interception, and section data attributes |
+| [Dynamic theme data](./dynamic-theme-data)                                                      | `schema.json`, `product-data-schema.json`, and `section_schema` |
+| [Liquid reference](./liquid-reference)                                                          | Template syntax, filters, and rendering                         |
+| [Layout sections](./sections/layout-sections) · [Product sections](./sections/product-sections) · [Home sections](./sections/home-sections) | Built-in sections + custom `home-sections/` blocks              |
+| [Events reference](./events-reference)                                                          | Custom DOM events, link interception, and data attributes         |

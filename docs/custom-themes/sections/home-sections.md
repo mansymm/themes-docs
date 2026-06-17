@@ -154,6 +154,7 @@ Three section files share the same variable contract but render products in diff
 | `product.thumb`      | string         | Main thumbnail URL                         |
 | `product.images`     | string[]       | Additional image URLs                      |
 | `product.variations` | array          | Variation groups with `type` and `props[]` |
+| `product.product_theme_data` | object         | Merchant-configured dynamic settings for each product, set on the product edit page in the Seller Dashboard |
 
 **Variation properties (for color swatches):**
 
@@ -350,3 +351,133 @@ The same product variable contract as the homepage product sections applies here
 :::info
 On collections pages the storefront renders a "Load more" button **outside** this template using React. Each click fetches the next page and re-renders this template with the full accumulated product list.
 :::
+
+## Custom home sections {#custom-home-sections}
+
+Optional homepage blocks you ship with the theme live under `home-sections/`. Each block is one folder whose **name you choose** when authoring the theme — it must be **unique** among folders under `home-sections/` (no two blocks may share the same folder name).
+
+Example layout:
+
+```
+my-theme/
+├── home-sections/
+│   ├── category-mosaic/          ← unique folder name (example)
+│   │   ├── config.json           ← icon, label, section_schema
+│   │   └── template.liquid       ← Liquid for this block
+│   └── shop-the-look/            ← another unique folder name (example)
+│       ├── config.json
+│       └── template.liquid
+├── schema.json                   ← global theme schema (theme_data)
+├── sections/                     ← built-in section templates (.liquid)
+├── ...
+```
+
+Every folder must contain exactly these files:
+
+- **`config.json`** — `icon`, `label`, and **`section_schema`** (field definitions; same types as in [Dynamic theme data](../dynamic-theme-data.md), including optional root-level [`group`](../dynamic-theme-data.md#optional-editor-grouping-group) for editor layout).
+- **`template.liquid`** — Liquid for that block.
+
+Example `config.json`:
+
+```json
+{
+  "icon": "https://api.iconify.design/lucide:layout-grid.svg",
+  "label": "Category mosaic",
+  "section_schema": [
+    {
+      "name": "title",
+      "type": "string",
+      "default": "Shop by mood",
+      "description": "Section heading"
+    }
+  ]
+}
+```
+
+When the theme is uploaded, those folders populate the theme template’s **`home_sections`** list. Merchants add instances in the home builder; each instance’s saved values are exposed in Liquid as **`section_data`**.
+
+`section_data` is **only** available in these custom home section templates — not in built-in `sections/*.liquid` files. Global settings from `schema.json` are still available as **`theme_data`** here (as in every section).
+
+:::info
+Custom home sections do **not** receive `product.product_theme_data`. Entity pickers in `section_schema` store IDs in `section_data`; resolve them in Liquid or via `data-eo-hs-*` hydration (below).
+:::
+
+### Section key naming
+
+| Authoring | Stored `key` |
+| --------- | ------------ |
+| Folder `category-mosaic` | `category_mosaic` |
+| Folder `tilted-scrolling-marque` | `tilted_scrolling_marque` |
+
+Hyphens in folder names become underscores. Use **lowercase kebab-case** folder names (like the other blocks in the CLI template). Keys must be unique across all `home-sections/` folders.
+
+### Entity fields in `section_data`
+
+`product_multi_select`, `category_multi_select`, `page_multi_select`, and the single-select variants store **IDs only** in `section_data` — not full product/category/page records. To render names, prices, or URLs you can:
+
+1. **Resolve in Liquid** when the section already receives matching entities in scope (same patterns as [Resolving IDs in templates](../dynamic-theme-data.md#resolving-ids-in-templates)).
+2. **Hydrate client-side** with `data-eo-hs-*` attributes (below) — the reference CLI `script.js` includes helpers for this.
+3. **Fetch in your own `script.js`** using the Easy Orders API (for example `https://api.easy-orders.net/api/v1/products?filter=id||$in||…`).
+
+### Hydrating entity IDs (`data-eo-hs-*`)
+
+Custom home sections often use entity pickers. A practical pattern (included in the CLI template `script.js`):
+
+**Product or category grids** — container with ID list and mount point:
+
+```liquid
+<div
+  class="my-picks"
+  data-eo-hs-entity="products"
+  data-eo-hs-ids="{{ section_data.pick_product_ids | join: ',' | strip }}"
+>
+  <div data-eo-hs-mount>
+    {% for id in section_data.pick_product_ids %}
+      <div class="eo-hs-skeleton eo-hs-skeleton--product" aria-hidden="true"></div>
+    {% endfor %}
+  </div>
+</div>
+```
+
+- `data-eo-hs-entity` — `products` or `categories`
+- `data-eo-hs-ids` — comma-separated IDs in merchant display order
+- `data-eo-hs-mount` — inner element replaced with fetched cards after load
+
+Show skeleton placeholders in Liquid so layout does not jump while `script.js` fetches entities.
+
+**Single link from an entity ID** (e.g. category tile inside `object_array`):
+
+```liquid
+<a
+  href="#"
+  data-eo-hs-cta="1"
+  data-eo-hs-cta-entity="categories"
+  data-eo-hs-cta-id="{{ tile.category_id }}"
+>
+  {{ tile.label }}
+</a>
+```
+
+The CLI script resolves the ID and sets `href` to `/collections/{slug}`, `/products/{slug}`, or `/pages/{slug}` depending on `data-eo-hs-cta-entity`.
+
+Optional: wrap the section in an element with `data-eo-api-base` pointing at your store API origin if you need a non-default API base.
+
+### Events
+
+Custom home sections support the same storefront events as product grids when you wire them in your template:
+
+| Event | Detail | Purpose |
+| ----- | ------ | ------- |
+| `quick-add` | `{ productId }` | Add to cart from a hydrated product card |
+| `quick-view` | `{ productId }` | Open quick-view modal |
+| `toggle-wishlist` | `{ productId }` | Toggle wishlist |
+| `toggle-compare` | `{ productId }` | Add to compare and open modal |
+| `footer-subscribe` | `{ email }` | Newsletter signup |
+
+Dispatch bubbling `CustomEvent`s as documented in [Events reference](../events-reference). Link clicks inside the section are intercepted for SPA navigation when the section container enables link interception.
+
+```liquid
+{% if section_data.title != blank %}
+  <h2>{{ section_data.title }}</h2>
+{% endif %}
+```

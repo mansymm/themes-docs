@@ -1,5 +1,5 @@
 ---
-sidebar_position: 6
+sidebar_position: 7
 ---
 
 # Events & Data Attributes
@@ -142,7 +142,7 @@ You don't need to do anything special — use standard `<a href="...">` tags and
 >
   Cart
 </button>
-<span class="ab-cart-count">0</span>
+<span id="header-cart-count" hidden>0</span>
 <button
   onclick="this.dispatchEvent(new CustomEvent('lang-click',{bubbles:true,detail:{anchor:this}}))"
 >
