@@ -85,6 +85,7 @@ The same optional `group` applies to **root** entries in **`section_schema`** fo
 | `boolean`  | Toggle switch  | `true` / `false`                     |
 | `checkbox` | Checkbox       | `true` / `false`                     |
 | `image`    | Image uploader | `string` (URL of the uploaded image) |
+| `video`    | Video uploader | `string` (URL of the uploaded video) |
 
 ```json
 {
@@ -136,6 +137,23 @@ The merchant sees an image upload area with drag-and-drop support and a live pre
 ```liquid
 {% if theme_data.hero_background_image != blank %}
   <img src="{{ theme_data.hero_background_image }}" alt="Hero" />
+{% endif %}
+```
+
+```json
+{
+  "name": "hero_background_video",
+  "type": "video",
+  "default": "",
+  "description": "Hero background video"
+}
+```
+
+The merchant sees a video upload area with drag-and-drop support and a preview player. The stored value is a plain URL string — use it in Liquid like any other string field:
+
+```liquid
+{% if theme_data.hero_background_video != blank %}
+  <video src="{{ theme_data.hero_background_video }}" autoplay muted playsinline loop></video>
 {% endif %}
 ```
 
@@ -631,7 +649,7 @@ For global color values, prefer using the [Palette](./palette) system instead of
 | Property      | Required                                                                     | Type     | Description                                                                                                                                                                                                                                                  |
 | ------------- | ---------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `name`        | Yes                                                                          | `string` | Unique key — becomes `theme_data.{name}` in Liquid                                                                                                                                                                                                           |
-| `type`        | Yes                                                                          | `string` | One of: `string`, `number`, `color`, `boolean`, `checkbox`, `image`, `select`, `multi_select`, `product_multi_select`, `category_multi_select`, `page_multi_select`, `product_single_select`, `category_single_select`, `page_single_select`, `object_array` |
+| `type`        | Yes                                                                          | `string` | One of: `string`, `number`, `color`, `boolean`, `checkbox`, `image`, `video`, `select`, `multi_select`, `product_multi_select`, `category_multi_select`, `page_multi_select`, `product_single_select`, `category_single_select`, `page_single_select`, `object_array` |
 | `description` | Yes                                                                          | `string` | Label shown to merchants in the settings form                                                                                                                                                                                                                |
 | `default`     | No (not allowed for entity multi-select or entity single-select field types) | varies   | Default value when merchant hasn't set one                                                                                                                                                                                                                   |
 | `options`     | For `select` / `multi_select`                                                | `array`  | Array of `{ label, value }` objects                                                                                                                                                                                                                          |
@@ -647,6 +665,7 @@ For global color values, prefer using the [Palette](./palette) system instead of
 | `color`                  | `string` (hex)                                   | `"#1A1A2E"`                               |
 | `boolean` / `checkbox`   | `boolean`                                        | `true`                                    |
 | `image`                  | `string` (URL)                                   | `"https://files.easy-orders.net/img.jpg"` |
+| `video`                  | `string` (URL)                                   | `"https://files.easy-orders.net/video.mp4"` |
 | `select`                 | `string` (one of `options[].value`)              | `"dark"`                                  |
 | `multi_select`           | `string[]` (subset of `options`)                 | `["sale", "new"]`                         |
 | `product_multi_select`   | `string[]` of product IDs (in merchant's order)  | `["prod_abc", "prod_xyz"]`                |
